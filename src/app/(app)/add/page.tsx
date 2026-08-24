@@ -8,38 +8,38 @@ export default function AddPage() {
       <div className="space-y-4 px-5 py-6">
         <Link
           href="/expense?add=1"
-          className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm active:bg-gray-50"
+          className="flex items-center gap-4 rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-sm active:bg-gray-50 dark:active:bg-gray-800"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-2xl">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-2xl dark:bg-rose-950">
             🧾
           </span>
           <div>
             <p className="font-semibold">Catat Pengeluaran</p>
-            <p className="text-sm text-gray-500">Potong dari budget kategori bulan ini</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Potong dari budget kategori bulan ini</p>
           </div>
         </Link>
         <Link
           href="/income"
-          className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm active:bg-gray-50"
+          className="flex items-center gap-4 rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-sm active:bg-gray-50 dark:active:bg-gray-800"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl dark:bg-green-950">
             💸
           </span>
           <div>
             <p className="font-semibold">Catat Pemasukan</p>
-            <p className="text-sm text-gray-500">Gaji, freelance, atau sumber lain</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Gaji, freelance, atau sumber lain</p>
           </div>
         </Link>
         <Link
           href="/budget"
-          className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm active:bg-gray-50"
+          className="flex items-center gap-4 rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-sm active:bg-gray-50 dark:active:bg-gray-800"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-2xl">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-2xl dark:bg-indigo-950">
             🎯
           </span>
           <div>
             <p className="font-semibold">Atur Budget</p>
-            <p className="text-sm text-gray-500">Alokasikan dana setelah gajian</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Alokasikan dana setelah gajian</p>
           </div>
         </Link>
       </div>

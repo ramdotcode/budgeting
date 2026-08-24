@@ -67,7 +67,10 @@ export default function CategoriesPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setSaving(false);
+      return;
+    }
 
     const payload = {
       name: form.name.trim(),
@@ -103,7 +106,10 @@ export default function CategoriesPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setSaving(false);
+      return;
+    }
     await supabase
       .from("categories")
       .insert(DEFAULT_CATEGORIES.map((c) => ({ ...c, user_id: user.id })));
@@ -131,7 +137,7 @@ export default function CategoriesPage() {
 
       <div className="space-y-6 px-5 py-4">
         {loading ? (
-          <p className="py-10 text-center text-sm text-gray-400">Memuat...</p>
+          <p className="py-10 text-center text-sm text-gray-400 dark:text-gray-500">Memuat...</p>
         ) : categories.length === 0 ? (
           <EmptyState icon="🏷️" message="Belum ada kategori.">
             <button
@@ -163,7 +169,7 @@ export default function CategoriesPage() {
       {form && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={() => setForm(null)}>
           <div
-            className="w-full rounded-t-3xl bg-white p-6 pb-[calc(env(safe-area-inset-bottom)+24px)]"
+            className="w-full rounded-t-3xl bg-white dark:bg-gray-900 p-6 pb-[calc(env(safe-area-inset-bottom)+24px)]"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="mb-4 text-lg font-bold">
@@ -177,8 +183,8 @@ export default function CategoriesPage() {
                     onClick={() => setForm({ ...form, type: t })}
                     className={`flex-1 rounded-xl border py-2.5 text-sm font-medium ${
                       form.type === t
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                        : "border-gray-200 text-gray-500"
+                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300"
+                        : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400"
                     }`}
                   >
                     {t === "expense" ? "Pengeluaran" : "Pemasukan"}
@@ -189,7 +195,7 @@ export default function CategoriesPage() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Nama kategori"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base outline-none focus:border-indigo-500"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
               />
               <div className="flex flex-wrap gap-2">
                 {ICONS.map((ic) => (
@@ -197,7 +203,7 @@ export default function CategoriesPage() {
                     key={ic}
                     onClick={() => setForm({ ...form, icon: ic })}
                     className={`flex h-10 w-10 items-center justify-center rounded-full text-lg ${
-                      form.icon === ic ? "bg-indigo-100 ring-2 ring-indigo-500" : "bg-gray-100"
+                      form.icon === ic ? "bg-indigo-100 ring-2 ring-indigo-500 dark:bg-indigo-900" : "bg-gray-100 dark:bg-gray-800"
                     }`}
                   >
                     {ic}
@@ -209,13 +215,13 @@ export default function CategoriesPage() {
                   <button
                     key={col}
                     onClick={() => setForm({ ...form, color: col })}
-                    className={`h-8 w-8 rounded-full ${form.color === col ? "ring-2 ring-offset-2 ring-gray-800" : ""}`}
+                    className={`h-8 w-8 rounded-full ${form.color === col ? "ring-2 ring-offset-2 ring-gray-800 dark:ring-gray-200 dark:ring-offset-gray-900" : ""}`}
                     style={{ backgroundColor: col }}
                     aria-label={`Warna ${col}`}
                   />
                 ))}
               </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
               <button
                 onClick={save}
                 disabled={saving || !form.name.trim()}
@@ -245,12 +251,12 @@ function CategorySection({
   if (items.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-2 text-sm font-semibold text-gray-500">{title}</h2>
-      <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+      <h2 className="mb-2 text-sm font-semibold text-gray-500 dark:text-gray-400">{title}</h2>
+      <div className="overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm">
         {items.map((c, i) => (
           <div
             key={c.id}
-            className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-gray-100" : ""}`}
+            className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
           >
             <span
               className="flex h-9 w-9 items-center justify-center rounded-full text-lg"
@@ -259,10 +265,10 @@ function CategorySection({
               {c.icon}
             </span>
             <span className="flex-1 font-medium">{c.name}</span>
-            <button onClick={() => onEdit(c)} className="px-2 py-1 text-sm text-indigo-600">
+            <button onClick={() => onEdit(c)} className="px-2 py-1 text-sm text-indigo-600 dark:text-indigo-400">
               Edit
             </button>
-            <button onClick={() => onDelete(c.id)} className="px-2 py-1 text-sm text-red-500">
+            <button onClick={() => onDelete(c.id)} className="px-2 py-1 text-sm text-red-500 dark:text-red-400">
               Hapus
             </button>
           </div>

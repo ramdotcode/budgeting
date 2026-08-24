@@ -131,21 +131,21 @@ export default function ReportsPage() {
         <MonthPicker period={period} onChange={setPeriod} />
 
         <div className="grid grid-cols-3 gap-2">
-          <StatCard label="Pemasukan" value={totalIncome} color="text-green-600" />
-          <StatCard label="Pengeluaran" value={totalSpent} color="text-rose-600" />
-          <StatCard label="Selisih" value={totalIncome - totalSpent} color="text-indigo-600" />
+          <StatCard label="Pemasukan" value={totalIncome} color="text-green-600 dark:text-green-400" />
+          <StatCard label="Pengeluaran" value={totalSpent} color="text-rose-600 dark:text-rose-400" />
+          <StatCard label="Selisih" value={totalIncome - totalSpent} color="text-indigo-600 dark:text-indigo-400" />
         </div>
 
         {loading ? (
-          <p className="py-10 text-center text-sm text-gray-400">Memuat...</p>
+          <p className="py-10 text-center text-sm text-gray-400 dark:text-gray-500">Memuat...</p>
         ) : (
           <>
-            <section className="rounded-2xl bg-white p-4 shadow-sm">
-              <h2 className="mb-2 text-sm font-semibold text-gray-500">
+            <section className="rounded-2xl bg-white dark:bg-gray-900 p-4 shadow-sm">
+              <h2 className="mb-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
                 Pengeluaran per kategori
               </h2>
               {pieData.length === 0 ? (
-                <p className="py-8 text-center text-sm text-gray-400">
+                <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
                   Belum ada pengeluaran bulan ini.
                 </p>
               ) : (
@@ -178,7 +178,7 @@ export default function ReportsPage() {
                         />
                         <span className="flex-1">{d.name}</span>
                         <span className="font-medium">{formatRupiah(d.value)}</span>
-                        <span className="w-12 text-right text-xs text-gray-400">
+                        <span className="w-12 text-right text-xs text-gray-400 dark:text-gray-500">
                           {totalSpent > 0 ? Math.round((d.value / totalSpent) * 100) : 0}%
                         </span>
                       </li>
@@ -188,12 +188,12 @@ export default function ReportsPage() {
               )}
             </section>
 
-            <section className="rounded-2xl bg-white p-4 shadow-sm">
-              <h2 className="mb-2 text-sm font-semibold text-gray-500">
+            <section className="rounded-2xl bg-white dark:bg-gray-900 p-4 shadow-sm">
+              <h2 className="mb-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
                 Budget vs Realisasi
               </h2>
               {barData.length === 0 ? (
-                <p className="py-8 text-center text-sm text-gray-400">
+                <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
                   Belum ada budget bulan ini.
                 </p>
               ) : (
@@ -201,7 +201,7 @@ export default function ReportsPage() {
                   <div className="h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={barData} margin={{ left: -10 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#8888885a" />
                         <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-30} textAnchor="end" height={50} />
                         <YAxis tickFormatter={shortRupiah} tick={{ fontSize: 10 }} />
                         <Tooltip formatter={(v) => formatRupiah(Number(v))} />
@@ -211,7 +211,7 @@ export default function ReportsPage() {
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                  <p className="mt-2 text-center text-xs text-gray-400">
+                  <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
                     Total budget {formatRupiah(totalAllocated)} · terpakai{" "}
                     {formatRupiah(totalSpent)}
                   </p>
@@ -219,8 +219,8 @@ export default function ReportsPage() {
               )}
             </section>
 
-            <section className="rounded-2xl bg-white p-4 shadow-sm">
-              <h2 className="mb-2 text-sm font-semibold text-gray-500">
+            <section className="rounded-2xl bg-white dark:bg-gray-900 p-4 shadow-sm">
+              <h2 className="mb-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
                 Tren {TREND_MONTHS} bulan terakhir
               </h2>
               {trend.every((t) => t.pemasukan === 0 && t.pengeluaran === 0) ? (
@@ -229,7 +229,7 @@ export default function ReportsPage() {
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={trend} margin={{ left: -10 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#8888885a" />
                       <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                       <YAxis tickFormatter={shortRupiah} tick={{ fontSize: 10 }} />
                       <Tooltip formatter={(v) => formatRupiah(Number(v))} />
@@ -258,7 +258,7 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-3 text-center shadow-sm">
+    <div className="rounded-2xl bg-white dark:bg-gray-900 p-3 text-center shadow-sm">
       <p className="text-[11px] text-gray-500">{label}</p>
       <p className={`mt-0.5 text-xs font-bold ${color}`}>{formatRupiah(value)}</p>
     </div>

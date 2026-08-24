@@ -56,7 +56,7 @@ export default function RegisterPage() {
       <div className="mb-8 text-center">
         <div className="text-4xl">💰</div>
         <h1 className="mt-2 text-2xl font-bold">Daftar Akun</h1>
-        <p className="text-sm text-gray-500">Mulai atur budget bulananmu</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Mulai atur budget bulananmu</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -66,7 +66,7 @@ export default function RegisterPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base outline-none focus:border-indigo-500"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             placeholder="kamu@email.com"
           />
         </div>
@@ -78,12 +78,12 @@ export default function RegisterPage() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base outline-none focus:border-indigo-500"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             placeholder="Minimal 6 karakter"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {info && <p className="text-sm text-green-600">{info}</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {info && <p className="text-sm text-green-600 dark:text-green-400">{info}</p>}
         <button
           type="submit"
           disabled={loading}
@@ -92,9 +92,9 @@ export default function RegisterPage() {
           {loading ? "Mendaftar..." : "Daftar"}
         </button>
       </form>
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         Sudah punya akun?{" "}
-        <Link href="/login" className="font-semibold text-indigo-600">
+        <Link href="/login" className="font-semibold text-indigo-600 dark:text-indigo-400">
           Masuk
         </Link>
       </p>

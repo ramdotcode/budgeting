@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className="mb-8 text-center">
         <div className="text-4xl">💰</div>
         <h1 className="mt-2 text-2xl font-bold">Budgeting</h1>
-        <p className="text-sm text-gray-500">Masuk untuk mengelola keuanganmu</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Masuk untuk mengelola keuanganmu</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -45,7 +45,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base outline-none focus:border-indigo-500"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             placeholder="kamu@email.com"
           />
         </div>
@@ -56,11 +56,11 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base outline-none focus:border-indigo-500"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
             placeholder="••••••••"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         <button
           type="submit"
           disabled={loading}
@@ -69,9 +69,9 @@ export default function LoginPage() {
           {loading ? "Masuk..." : "Masuk"}
         </button>
       </form>
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         Belum punya akun?{" "}
-        <Link href="/register" className="font-semibold text-indigo-600">
+        <Link href="/register" className="font-semibold text-indigo-600 dark:text-indigo-400">
           Daftar
         </Link>
       </p>

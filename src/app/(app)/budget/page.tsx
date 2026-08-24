@@ -78,7 +78,10 @@ export default function BudgetPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setSaving(false);
+      return;
+    }
 
     const existing = items.find((i) => i.category_id === editItem.categoryId);
     if (existing) {
@@ -159,7 +162,7 @@ export default function BudgetPage() {
       <div className="space-y-4 px-5 py-4">
         <MonthPicker period={period} onChange={setPeriod} />
 
-        <div className="rounded-2xl bg-indigo-600 p-5 text-white shadow-sm">
+        <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-5 text-white shadow-sm shadow-indigo-600/20">
           <div className="flex justify-between text-sm opacity-90">
             <span>Pemasukan</span>
             <span>{formatRupiah(totalIncome)}</span>
@@ -179,7 +182,7 @@ export default function BudgetPage() {
         </div>
 
         {loading ? (
-          <p className="py-10 text-center text-sm text-gray-400">Memuat...</p>
+          <p className="py-10 text-center text-sm text-gray-400 dark:text-gray-500">Memuat...</p>
         ) : (
           <>
             {items.length === 0 && (
@@ -187,7 +190,7 @@ export default function BudgetPage() {
                 <button
                   onClick={copyLastMonth}
                   disabled={saving}
-                  className="rounded-xl border border-indigo-600 px-4 py-2 text-sm font-semibold text-indigo-600 disabled:opacity-50"
+                  className="rounded-xl border border-indigo-600 px-4 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 disabled:opacity-50"
                 >
                   Salin dari bulan lalu
                 </button>
@@ -195,11 +198,11 @@ export default function BudgetPage() {
             )}
 
             {items.length > 0 && (
-              <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+              <div className="overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm">
                 {items.map((item, i) => (
                   <div
                     key={item.id}
-                    className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-gray-100" : ""}`}
+                    className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
                   >
                     <span
                       className="flex h-9 w-9 items-center justify-center rounded-full text-lg"
@@ -209,7 +212,7 @@ export default function BudgetPage() {
                     </span>
                     <div className="flex-1">
                       <p className="font-medium">{item.categories?.name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {formatRupiah(Number(item.allocated_amount))}
                       </p>
                     </div>
@@ -220,13 +223,13 @@ export default function BudgetPage() {
                           amount: Number(item.allocated_amount),
                         })
                       }
-                      className="px-2 py-1 text-sm text-indigo-600"
+                      className="px-2 py-1 text-sm text-indigo-600 dark:text-indigo-400"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => removeItem(item)}
-                      className="px-2 py-1 text-sm text-red-500"
+                      className="px-2 py-1 text-sm text-red-500 dark:text-red-400"
                     >
                       Hapus
                     </button>
@@ -236,16 +239,16 @@ export default function BudgetPage() {
             )}
 
             {categories.length === 0 ? (
-              <p className="text-center text-sm text-gray-500">
+              <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                 Belum ada kategori pengeluaran.{" "}
-                <Link href="/categories" className="font-semibold text-indigo-600">
+                <Link href="/categories" className="font-semibold text-indigo-600 dark:text-indigo-400">
                   Buat kategori dulu
                 </Link>
               </p>
             ) : (
               availableCategories.length > 0 && (
                 <section>
-                  <h2 className="mb-2 text-sm font-semibold text-gray-500">
+                  <h2 className="mb-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
                     Tambah alokasi kategori
                   </h2>
                   <div className="flex flex-wrap gap-2">
@@ -253,7 +256,7 @@ export default function BudgetPage() {
                       <button
                         key={c.id}
                         onClick={() => setEditItem({ categoryId: c.id, amount: 0 })}
-                        className="flex items-center gap-1.5 rounded-full border border-dashed border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 active:border-indigo-500"
+                        className="flex items-center gap-1.5 rounded-full border border-dashed border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 active:border-indigo-500"
                       >
                         <span>{c.icon}</span> {c.name} +
                       </button>
@@ -267,7 +270,7 @@ export default function BudgetPage() {
               <button
                 onClick={copyLastMonth}
                 disabled={saving}
-                className="w-full rounded-xl border border-gray-300 bg-white py-3 text-sm font-medium text-gray-600 disabled:opacity-50"
+                className="w-full rounded-xl border border-gray-300 bg-white py-3 text-sm font-medium text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 disabled:opacity-50"
               >
                 Salin alokasi bulan lalu (yang belum ada)
               </button>
@@ -279,14 +282,14 @@ export default function BudgetPage() {
       {editItem && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={() => setEditItem(null)}>
           <div
-            className="w-full rounded-t-3xl bg-white p-6 pb-[calc(env(safe-area-inset-bottom)+24px)]"
+            className="w-full rounded-t-3xl bg-white dark:bg-gray-900 p-6 pb-[calc(env(safe-area-inset-bottom)+24px)]"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="mb-1 text-lg font-bold">
               {categories.find((c) => c.id === editItem.categoryId)?.icon}{" "}
               {categories.find((c) => c.id === editItem.categoryId)?.name}
             </h2>
-            <p className="mb-4 text-sm text-gray-500">Berapa alokasi budget bulan ini?</p>
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">Berapa alokasi budget bulan ini?</p>
             <div className="space-y-4">
               <AmountInput value={editItem.amount} onChange={(n) => setEditItem({ ...editItem, amount: n })} autoFocus />
               <button

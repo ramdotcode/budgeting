@@ -47,6 +47,21 @@ export function periodRange(period: string): { from: string; to: string } {
   return { from: period, to: shiftPeriod(period, 1) };
 }
 
+// "2026-07-01" -> "2026-07-31" (tanggal terakhir bulan tsb)
+export function lastDayOfPeriod(period: string): string {
+  const [y, m] = period.split("-").map(Number);
+  const d = new Date(y, m, 0);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// jaga tanggal tetap di dalam bulan periode, supaya catatan tidak nyasar lintas bulan
+export function clampDateToPeriod(dateStr: string, period: string): string {
+  const last = lastDayOfPeriod(period);
+  if (dateStr < period) return period;
+  if (dateStr > last) return last;
+  return dateStr;
+}
+
 export function todayStr(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;

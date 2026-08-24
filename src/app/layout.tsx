@@ -19,14 +19,22 @@ export const viewport: Viewport = {
   themeColor: "#4f46e5",
 };
 
+// Jalan sebelum paint pertama supaya tema tersimpan langsung terpakai tanpa flash
+const themeScript = `try{var t=localStorage.getItem("theme");var m=matchMedia("(prefers-color-scheme: dark)");var c=document.documentElement.classList;c.toggle("dark",t==="dark"||(!t&&m.matches));m.addEventListener("change",function(e){if(!localStorage.getItem("theme"))c.toggle("dark",e.matches)})}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full bg-gray-50 text-gray-900">{children}</body>
+    <html lang="id" suppressHydrationWarning className={`${geistSans.variable} h-full antialiased`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-full bg-gray-50 font-sans text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+        {children}
+      </body>
     </html>
   );
 }

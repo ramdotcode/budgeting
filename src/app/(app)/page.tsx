@@ -43,12 +43,12 @@ export default function DashboardPage() {
   return (
     <div>
       <header className="px-5 pt-[calc(env(safe-area-inset-top)+24px)]">
-        <p className="text-sm text-gray-500">{formatPeriod(period)}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{formatPeriod(period)}</p>
         <h1 className="text-2xl font-bold">Halo! 👋</h1>
       </header>
 
       <div className="space-y-4 px-5 py-4">
-        <div className="rounded-2xl bg-indigo-600 p-5 text-white shadow-md">
+        <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-5 text-white shadow-md shadow-indigo-600/20">
           <p className="text-sm opacity-80">Sisa budget bulan ini</p>
           <p className={`mt-1 text-3xl font-bold ${totalRemaining < 0 ? "text-red-200" : ""}`}>
             {formatRupiah(totalRemaining)}
@@ -68,14 +68,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           <Link
             href="/expense?add=1"
-            className="rounded-2xl bg-white p-4 text-center shadow-sm active:bg-gray-50"
+            className="rounded-2xl bg-white dark:bg-gray-900 p-4 text-center shadow-sm active:bg-gray-50 dark:active:bg-gray-800"
           >
             <div className="text-2xl">🧾</div>
             <p className="mt-1 text-sm font-semibold">Catat Pengeluaran</p>
           </Link>
           <Link
             href="/income"
-            className="rounded-2xl bg-white p-4 text-center shadow-sm active:bg-gray-50"
+            className="rounded-2xl bg-white dark:bg-gray-900 p-4 text-center shadow-sm active:bg-gray-50 dark:active:bg-gray-800"
           >
             <div className="text-2xl">💸</div>
             <p className="mt-1 text-sm font-semibold">Catat Pemasukan</p>
@@ -84,13 +84,13 @@ export default function DashboardPage() {
 
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-500">Budget per kategori</h2>
-            <Link href="/budget" className="text-sm font-semibold text-indigo-600">
+            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Budget per kategori</h2>
+            <Link href="/budget" className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
               Atur
             </Link>
           </div>
           {loading ? (
-            <p className="py-8 text-center text-sm text-gray-400">Memuat...</p>
+            <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">Memuat...</p>
           ) : summary.length === 0 ? (
             <EmptyState
               icon="🎯"
