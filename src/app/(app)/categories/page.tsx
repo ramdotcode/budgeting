@@ -128,7 +128,7 @@ export default function CategoriesPage() {
         action={
           <button
             onClick={() => setForm(emptyForm)}
-            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white active:bg-indigo-700"
+            className="rounded-full bg-lime-400 px-4 py-2 text-sm font-semibold text-lime-950 active:bg-lime-500"
           >
             + Baru
           </button>
@@ -143,7 +143,7 @@ export default function CategoriesPage() {
             <button
               onClick={seedDefaults}
               disabled={saving}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-lime-950 disabled:opacity-50"
             >
               Pakai kategori default
             </button>
@@ -183,7 +183,7 @@ export default function CategoriesPage() {
                     onClick={() => setForm({ ...form, type: t })}
                     className={`flex-1 rounded-xl border py-2.5 text-sm font-medium ${
                       form.type === t
-                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300"
+                        ? "border-lime-500 bg-lime-100 dark:bg-lime-950 text-lime-800 dark:text-lime-300"
                         : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400"
                     }`}
                   >
@@ -195,7 +195,7 @@ export default function CategoriesPage() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Nama kategori"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
               />
               <div className="flex flex-wrap gap-2">
                 {ICONS.map((ic) => (
@@ -203,7 +203,7 @@ export default function CategoriesPage() {
                     key={ic}
                     onClick={() => setForm({ ...form, icon: ic })}
                     className={`flex h-10 w-10 items-center justify-center rounded-full text-lg ${
-                      form.icon === ic ? "bg-indigo-100 ring-2 ring-indigo-500 dark:bg-indigo-900" : "bg-gray-100 dark:bg-gray-800"
+                      form.icon === ic ? "bg-lime-100 ring-2 ring-lime-500 dark:bg-lime-900" : "bg-gray-100 dark:bg-gray-800"
                     }`}
                   >
                     {ic}
@@ -225,7 +225,7 @@ export default function CategoriesPage() {
               <button
                 onClick={save}
                 disabled={saving || !form.name.trim()}
-                className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-50"
+                className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
               >
                 {saving ? "Menyimpan..." : "Simpan"}
               </button>
@@ -265,7 +265,7 @@ function CategorySection({
               {c.icon}
             </span>
             <span className="flex-1 font-medium">{c.name}</span>
-            <button onClick={() => onEdit(c)} className="px-2 py-1 text-sm text-indigo-600 dark:text-indigo-400">
+            <button onClick={() => onEdit(c)} className="px-2 py-1 text-sm text-lime-700 dark:text-lime-400">
               Edit
             </button>
             <button onClick={() => onDelete(c.id)} className="px-2 py-1 text-sm text-red-500 dark:text-red-400">

@@ -45,7 +45,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
             placeholder="kamu@email.com"
           />
         </div>
@@ -56,7 +56,7 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
             placeholder="••••••••"
           />
         </div>
@@ -64,14 +64,14 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white active:bg-indigo-700 disabled:opacity-50"
+          className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 active:bg-lime-500 disabled:opacity-50"
         >
           {loading ? "Masuk..." : "Masuk"}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         Belum punya akun?{" "}
-        <Link href="/register" className="font-semibold text-indigo-600 dark:text-indigo-400">
+        <Link href="/register" className="font-semibold text-lime-700 dark:text-lime-400">
           Daftar
         </Link>
       </p>

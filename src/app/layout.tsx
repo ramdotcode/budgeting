@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#4f46e5",
+  themeColor: "#65a30d",
 };
 
 // Jalan sebelum paint pertama supaya tema tersimpan langsung terpakai tanpa flash

@@ -23,7 +23,7 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               aria-label="Tambah transaksi"
-              className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-2xl text-white shadow-lg active:bg-indigo-700"
+              className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-lime-400 text-2xl text-lime-950 shadow-lg active:bg-lime-500"
             >
               {item.icon}
             </Link>
@@ -33,7 +33,7 @@ export default function BottomNav() {
               href={item.href}
               className={`flex flex-col items-center gap-0.5 px-3 py-2 text-xs ${
                 pathname === item.href
-                  ? "font-semibold text-indigo-600 dark:text-indigo-400"
+                  ? "font-semibold text-lime-700 dark:text-lime-400"
                   : "text-gray-500 dark:text-gray-400"
               }`}
             >

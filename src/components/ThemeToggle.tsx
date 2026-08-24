@@ -37,7 +37,7 @@ export default function ThemeToggle() {
           onClick={() => apply(o.value)}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-colors ${
             theme === o.value
-              ? "bg-indigo-600 text-white shadow-sm"
+              ? "bg-lime-400 text-lime-950 shadow-sm"
               : "text-gray-500 active:bg-gray-50 dark:text-gray-400 dark:active:bg-gray-800"
           }`}
         >

@@ -133,7 +133,7 @@ export default function ReportsPage() {
         <div className="grid grid-cols-3 gap-2">
           <StatCard label="Pemasukan" value={totalIncome} color="text-green-600 dark:text-green-400" />
           <StatCard label="Pengeluaran" value={totalSpent} color="text-rose-600 dark:text-rose-400" />
-          <StatCard label="Selisih" value={totalIncome - totalSpent} color="text-indigo-600 dark:text-indigo-400" />
+          <StatCard label="Selisih" value={totalIncome - totalSpent} color="text-lime-700 dark:text-lime-400" />
         </div>
 
         {loading ? (
@@ -206,8 +206,8 @@ export default function ReportsPage() {
                         <YAxis tickFormatter={shortRupiah} tick={{ fontSize: 10 }} />
                         <Tooltip formatter={(v) => formatRupiah(Number(v))} />
                         <Legend wrapperStyle={{ fontSize: 12 }} />
-                        <Bar dataKey="Budget" fill="#c7d2fe" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="Realisasi" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Budget" fill="#d9f99d" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Realisasi" fill="#65a30d" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

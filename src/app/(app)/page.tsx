@@ -48,12 +48,12 @@ export default function DashboardPage() {
       </header>
 
       <div className="space-y-4 px-5 py-4">
-        <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-5 text-white shadow-md shadow-indigo-600/20">
+        <div className="rounded-2xl bg-gradient-to-br from-lime-200 to-lime-300 p-5 text-lime-950 shadow-md shadow-lime-600/20 dark:from-lime-950 dark:to-green-950 dark:text-lime-100">
           <p className="text-sm opacity-80">Sisa budget bulan ini</p>
-          <p className={`mt-1 text-3xl font-bold ${totalRemaining < 0 ? "text-red-200" : ""}`}>
+          <p className={`mt-1 text-3xl font-bold ${totalRemaining < 0 ? "text-red-700 dark:text-red-300" : ""}`}>
             {formatRupiah(totalRemaining)}
           </p>
-          <div className="mt-4 flex justify-between border-t border-white/20 pt-3 text-sm">
+          <div className="mt-4 flex justify-between border-t border-lime-950/15 dark:border-lime-100/20 pt-3 text-sm">
             <div>
               <p className="opacity-70">Pemasukan</p>
               <p className="font-semibold">{formatRupiah(totalIncome)}</p>
@@ -85,7 +85,7 @@ export default function DashboardPage() {
         <section>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Budget per kategori</h2>
-            <Link href="/budget" className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+            <Link href="/budget" className="text-sm font-semibold text-lime-700 dark:text-lime-400">
               Atur
             </Link>
           </div>
@@ -98,7 +98,7 @@ export default function DashboardPage() {
             >
               <Link
                 href="/budget"
-                className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-lime-950"
               >
                 Buat Budget
               </Link>

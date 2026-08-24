@@ -107,7 +107,7 @@ export default function IncomePage() {
         action={
           <button
             onClick={() => setShowForm(true)}
-            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white active:bg-indigo-700"
+            className="rounded-full bg-lime-400 px-4 py-2 text-sm font-semibold text-lime-950 active:bg-lime-500"
           >
             + Catat
           </button>
@@ -117,7 +117,7 @@ export default function IncomePage() {
       <div className="space-y-4 px-5 py-4">
         <MonthPicker period={period} onChange={setPeriod} />
 
-        <div className="rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 p-5 text-white shadow-sm shadow-green-600/20">
+        <div className="rounded-2xl bg-gradient-to-br from-lime-200 to-lime-300 p-5 text-lime-950 shadow-sm shadow-lime-600/20 dark:from-lime-950 dark:to-green-950 dark:text-lime-100">
           <p className="text-sm opacity-80">Total pemasukan bulan ini</p>
           <p className="mt-1 text-3xl font-bold">{formatRupiah(total)}</p>
         </div>
@@ -178,7 +178,7 @@ export default function IncomePage() {
                 {categories.length === 0 ? (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Belum ada kategori pemasukan.{" "}
-                    <Link href="/categories" className="font-semibold text-indigo-600 dark:text-indigo-400">
+                    <Link href="/categories" className="font-semibold text-lime-700 dark:text-lime-400">
                       Buat dulu
                     </Link>
                   </p>
@@ -190,7 +190,7 @@ export default function IncomePage() {
                         onClick={() => setCategoryId(categoryId === c.id ? "" : c.id)}
                         className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-sm ${
                           categoryId === c.id
-                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950 font-medium text-indigo-700 dark:text-indigo-300"
+                            ? "border-lime-500 bg-lime-100 dark:bg-lime-950 font-medium text-lime-800 dark:text-lime-300"
                             : "border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300"
                         }`}
                       >
@@ -208,20 +208,20 @@ export default function IncomePage() {
                   min={period}
                   max={lastDayOfPeriod(period)}
                   onChange={(e) => setDate(clampDateToPeriod(e.target.value, period))}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
                 />
               </div>
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Catatan (opsional)"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
               />
               {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
               <button
                 onClick={save}
                 disabled={saving || amount <= 0}
-                className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-50"
+                className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
               >
                 {saving ? "Menyimpan..." : "Simpan"}
               </button>

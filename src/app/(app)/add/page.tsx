@@ -34,7 +34,7 @@ export default function AddPage() {
           href="/budget"
           className="flex items-center gap-4 rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-sm active:bg-gray-50 dark:active:bg-gray-800"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-2xl dark:bg-indigo-950">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-lime-100 text-2xl dark:bg-lime-950">
             🎯
           </span>
           <div>

@@ -162,7 +162,7 @@ export default function BudgetPage() {
       <div className="space-y-4 px-5 py-4">
         <MonthPicker period={period} onChange={setPeriod} />
 
-        <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-5 text-white shadow-sm shadow-indigo-600/20">
+        <div className="rounded-2xl bg-gradient-to-br from-lime-200 to-lime-300 p-5 text-lime-950 shadow-sm shadow-lime-600/20 dark:from-lime-950 dark:to-green-950 dark:text-lime-100">
           <div className="flex justify-between text-sm opacity-90">
             <span>Pemasukan</span>
             <span>{formatRupiah(totalIncome)}</span>
@@ -171,11 +171,11 @@ export default function BudgetPage() {
             <span>Dialokasikan</span>
             <span>{formatRupiah(totalAllocated)}</span>
           </div>
-          <div className="mt-3 border-t border-white/20 pt-3">
+          <div className="mt-3 border-t border-lime-950/15 dark:border-lime-100/20 pt-3">
             <p className="text-sm opacity-80">
               {unallocated >= 0 ? "Belum dialokasikan" : "Melebihi pemasukan"}
             </p>
-            <p className={`text-2xl font-bold ${unallocated < 0 ? "text-red-200" : ""}`}>
+            <p className={`text-2xl font-bold ${unallocated < 0 ? "text-red-700 dark:text-red-300" : ""}`}>
               {formatRupiah(Math.abs(unallocated))}
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function BudgetPage() {
                 <button
                   onClick={copyLastMonth}
                   disabled={saving}
-                  className="rounded-xl border border-indigo-600 px-4 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 disabled:opacity-50"
+                  className="rounded-xl border border-lime-600 dark:border-lime-500 px-4 py-2 text-sm font-semibold text-lime-700 dark:text-lime-400 disabled:opacity-50"
                 >
                   Salin dari bulan lalu
                 </button>
@@ -223,7 +223,7 @@ export default function BudgetPage() {
                           amount: Number(item.allocated_amount),
                         })
                       }
-                      className="px-2 py-1 text-sm text-indigo-600 dark:text-indigo-400"
+                      className="px-2 py-1 text-sm text-lime-700 dark:text-lime-400"
                     >
                       Edit
                     </button>
@@ -241,7 +241,7 @@ export default function BudgetPage() {
             {categories.length === 0 ? (
               <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                 Belum ada kategori pengeluaran.{" "}
-                <Link href="/categories" className="font-semibold text-indigo-600 dark:text-indigo-400">
+                <Link href="/categories" className="font-semibold text-lime-700 dark:text-lime-400">
                   Buat kategori dulu
                 </Link>
               </p>
@@ -256,7 +256,7 @@ export default function BudgetPage() {
                       <button
                         key={c.id}
                         onClick={() => setEditItem({ categoryId: c.id, amount: 0 })}
-                        className="flex items-center gap-1.5 rounded-full border border-dashed border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 active:border-indigo-500"
+                        className="flex items-center gap-1.5 rounded-full border border-dashed border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 active:border-lime-500"
                       >
                         <span>{c.icon}</span> {c.name} +
                       </button>
@@ -295,7 +295,7 @@ export default function BudgetPage() {
               <button
                 onClick={saveItem}
                 disabled={saving}
-                className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-50"
+                className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
               >
                 {saving ? "Menyimpan..." : "Simpan Alokasi"}
               </button>

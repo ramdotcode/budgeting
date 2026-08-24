@@ -129,7 +129,7 @@ function ExpenseContent() {
         action={
           <button
             onClick={() => setShowForm(true)}
-            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white active:bg-indigo-700"
+            className="rounded-full bg-lime-400 px-4 py-2 text-sm font-semibold text-lime-950 active:bg-lime-500"
           >
             + Catat
           </button>
@@ -139,7 +139,7 @@ function ExpenseContent() {
       <div className="space-y-4 px-5 py-4">
         <MonthPicker period={period} onChange={setPeriod} />
 
-        <div className="rounded-2xl bg-gradient-to-br from-rose-600 to-pink-600 p-5 text-white shadow-sm shadow-rose-600/20">
+        <div className="rounded-2xl bg-gradient-to-br from-rose-100 to-rose-200 p-5 text-rose-950 shadow-sm shadow-rose-600/20 dark:from-rose-950 dark:to-pink-950 dark:text-rose-100">
           <p className="text-sm opacity-80">Total pengeluaran bulan ini</p>
           <p className="mt-1 text-3xl font-bold">{formatRupiah(total)}</p>
         </div>
@@ -203,7 +203,7 @@ function ExpenseContent() {
                 </p>
                 <Link
                   href="/budget"
-                  className="inline-block rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white"
+                  className="inline-block rounded-xl bg-lime-400 px-5 py-3 font-semibold text-lime-950"
                 >
                   Buat Budget
                 </Link>
@@ -222,7 +222,7 @@ function ExpenseContent() {
                         onClick={() => setBudgetItemId(s.budget_item_id)}
                         className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left ${
                           budgetItemId === s.budget_item_id
-                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950"
+                            ? "border-lime-500 bg-lime-100 dark:bg-lime-950"
                             : "border-gray-200 dark:border-gray-700"
                         }`}
                       >
@@ -257,20 +257,20 @@ function ExpenseContent() {
                     min={period}
                     max={lastDayOfPeriod(period)}
                     onChange={(e) => setDate(clampDateToPeriod(e.target.value, period))}
-                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
                   />
                 </div>
                 <input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Catatan (opsional)"
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
                 />
                 {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
                 <button
                   onClick={save}
                   disabled={saving || amount <= 0 || !budgetItemId}
-                  className="w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-50"
+                  className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
                 >
                   {saving ? "Menyimpan..." : "Simpan"}
                 </button>
