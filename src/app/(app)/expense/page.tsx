@@ -25,6 +25,7 @@ interface ExpenseRow {
   amount: number;
   date: string;
   note: string | null;
+  budget_item_id: string;
   budget_items: {
     category_id: string;
     categories: { name: string; icon: string; color: string } | null;
@@ -42,10 +43,31 @@ function ExpenseContent() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [editId, setEditId] = useState<string | null>(null);
   const [amount, setAmount] = useState(0);
   const [budgetItemId, setBudgetItemId] = useState("");
   const [date, setDate] = useState(todayStr());
   const [note, setNote] = useState("");
+
+  function openAdd() {
+    setEditId(null);
+    setAmount(0);
+    setBudgetItemId("");
+    setDate(clampDateToPeriod(todayStr(), period));
+    setNote("");
+    setError(null);
+    setShowForm(true);
+  }
+
+  function openEdit(exp: ExpenseRow) {
+    setEditId(exp.id);
+    setAmount(Number(exp.amount));
+    setBudgetItemId(exp.budget_item_id);
+    setDate(clampDateToPeriod(exp.date, period));
+    setNote(exp.note ?? "");
+    setError(null);
+    setShowForm(true);
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -93,16 +115,19 @@ function ExpenseContent() {
       return;
     }
 
-    const { error } = await supabase.from("expenses").insert({
-      user_id: user.id,
+    const payload = {
       budget_item_id: budgetItemId,
       amount,
       date,
       note: note.trim() || null,
-    });
+    };
+    const { error } = editId
+      ? await supabase.from("expenses").update(payload).eq("id", editId)
+      : await supabase.from("expenses").insert({ ...payload, user_id: user.id });
     if (error) {
       setError("Gagal menyimpan pengeluaran.");
     } else {
+      setEditId(null);
       setAmount(0);
       setNote("");
       setBudgetItemId("");
@@ -120,7 +145,13 @@ function ExpenseContent() {
 
   const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const selected = summary.find((s) => s.budget_item_id === budgetItemId);
-  const willOverspend = selected && amount > Number(selected.remaining);
+  // saat edit, nominal lama sudah terhitung di "spent" — tambahkan kembali ke sisa
+  const editing = editId ? expenses.find((e) => e.id === editId) : null;
+  const available = selected
+    ? Number(selected.remaining) +
+      (editing && editing.budget_item_id === budgetItemId ? Number(editing.amount) : 0)
+    : 0;
+  const willOverspend = selected && amount > available;
 
   return (
     <div>
@@ -128,7 +159,7 @@ function ExpenseContent() {
         title="Pengeluaran"
         action={
           <button
-            onClick={() => setShowForm(true)}
+            onClick={openAdd}
             className="rounded-full bg-lime-400 px-4 py-2 text-sm font-semibold text-lime-950 active:bg-lime-500"
           >
             + Catat
@@ -153,7 +184,8 @@ function ExpenseContent() {
             {expenses.map((exp, i) => (
               <div
                 key={exp.id}
-                className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
+                onClick={() => openEdit(exp)}
+                className={`flex cursor-pointer items-center gap-3 px-4 py-3 active:bg-gray-50 dark:active:bg-gray-800 ${i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
               >
                 <span
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg"
@@ -176,7 +208,10 @@ function ExpenseContent() {
                   -{formatRupiah(Number(exp.amount))}
                 </span>
                 <button
-                  onClick={() => remove(exp.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(exp.id);
+                  }}
                   className="px-1 text-gray-300 active:text-red-500 dark:text-gray-600"
                   aria-label="Hapus"
                 >
@@ -194,7 +229,9 @@ function ExpenseContent() {
             className="max-h-[85dvh] w-full overflow-y-auto rounded-t-3xl bg-white dark:bg-gray-900 p-6 pb-[calc(env(safe-area-inset-bottom)+24px)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-4 text-lg font-bold">Catat Pengeluaran</h2>
+            <h2 className="mb-4 text-lg font-bold">
+              {editId ? "Edit Pengeluaran" : "Catat Pengeluaran"}
+            </h2>
             {summary.length === 0 ? (
               <div className="space-y-3 py-4 text-center">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -272,7 +309,7 @@ function ExpenseContent() {
                   disabled={saving || amount <= 0 || !budgetItemId}
                   className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
                 >
-                  {saving ? "Menyimpan..." : "Simpan"}
+                  {saving ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Simpan"}
                 </button>
               </div>
             )}

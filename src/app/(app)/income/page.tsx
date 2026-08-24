@@ -28,10 +28,31 @@ export default function IncomePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [editId, setEditId] = useState<string | null>(null);
   const [amount, setAmount] = useState(0);
   const [categoryId, setCategoryId] = useState<string>("");
   const [date, setDate] = useState(todayStr());
   const [note, setNote] = useState("");
+
+  function openAdd() {
+    setEditId(null);
+    setAmount(0);
+    setCategoryId("");
+    setDate(clampDateToPeriod(todayStr(), period));
+    setNote("");
+    setError(null);
+    setShowForm(true);
+  }
+
+  function openEdit(inc: Income) {
+    setEditId(inc.id);
+    setAmount(Number(inc.amount));
+    setCategoryId(inc.category_id ?? "");
+    setDate(clampDateToPeriod(inc.date, period));
+    setNote(inc.note ?? "");
+    setError(null);
+    setShowForm(true);
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -74,16 +95,19 @@ export default function IncomePage() {
       return;
     }
 
-    const { error } = await supabase.from("incomes").insert({
-      user_id: user.id,
+    const payload = {
       amount,
       category_id: categoryId || null,
       date,
       note: note.trim() || null,
-    });
+    };
+    const { error } = editId
+      ? await supabase.from("incomes").update(payload).eq("id", editId)
+      : await supabase.from("incomes").insert({ ...payload, user_id: user.id });
     if (error) {
       setError("Gagal menyimpan pemasukan.");
     } else {
+      setEditId(null);
       setAmount(0);
       setNote("");
       setShowForm(false);
@@ -106,7 +130,7 @@ export default function IncomePage() {
         title="Pemasukan"
         action={
           <button
-            onClick={() => setShowForm(true)}
+            onClick={openAdd}
             className="rounded-full bg-lime-400 px-4 py-2 text-sm font-semibold text-lime-950 active:bg-lime-500"
           >
             + Catat
@@ -131,7 +155,8 @@ export default function IncomePage() {
             {incomes.map((inc, i) => (
               <div
                 key={inc.id}
-                className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
+                onClick={() => openEdit(inc)}
+                className={`flex cursor-pointer items-center gap-3 px-4 py-3 active:bg-gray-50 dark:active:bg-gray-800 ${i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""}`}
               >
                 <span
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg"
@@ -152,7 +177,10 @@ export default function IncomePage() {
                   +{formatRupiah(Number(inc.amount))}
                 </span>
                 <button
-                  onClick={() => remove(inc.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(inc.id);
+                  }}
                   className="px-1 text-gray-300 active:text-red-500 dark:text-gray-600"
                   aria-label="Hapus"
                 >
@@ -170,7 +198,9 @@ export default function IncomePage() {
             className="w-full rounded-t-3xl bg-white dark:bg-gray-900 p-6 pb-[calc(env(safe-area-inset-bottom)+24px)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-4 text-lg font-bold">Catat Pemasukan</h2>
+            <h2 className="mb-4 text-lg font-bold">
+              {editId ? "Edit Pemasukan" : "Catat Pemasukan"}
+            </h2>
             <div className="space-y-4">
               <AmountInput value={amount} onChange={setAmount} autoFocus />
               <div>
@@ -223,7 +253,7 @@ export default function IncomePage() {
                 disabled={saving || amount <= 0}
                 className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
               >
-                {saving ? "Menyimpan..." : "Simpan"}
+                {saving ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Simpan"}
               </button>
             </div>
           </div>
