@@ -10,6 +10,11 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Budgeting",
   description: "Atur pemasukan, budget bulanan, dan pengeluaranmu",
+  appleWebApp: {
+    capable: true,
+    title: "Budgeting",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
