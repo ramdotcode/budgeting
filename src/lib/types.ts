@@ -34,6 +34,7 @@ export interface BudgetItem {
   budget_id: string;
   category_id: string;
   allocated_amount: number;
+  split_days: number | null;
   categories?: Pick<Category, "name" | "icon" | "color"> | null;
 }
 
@@ -58,4 +59,11 @@ export interface BudgetSummaryRow {
   allocated_amount: number;
   spent: number;
   remaining: number;
+}
+
+export interface UserSettings {
+  user_id: string;
+  /** hari reset periode budget, 1-28 (1 = ikut kalender) */
+  period_start_day: number;
+  updated_at: string;
 }

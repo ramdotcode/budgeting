@@ -5,18 +5,21 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { BudgetSummaryRow } from "@/lib/types";
 import { currentPeriod, formatPeriod, formatRupiah, periodRange } from "@/lib/format";
+import { useSettings } from "@/lib/settings";
 import BudgetProgress from "@/components/BudgetProgress";
 import EmptyState from "@/components/EmptyState";
 
 export default function DashboardPage() {
   const supabase = createClient();
-  const period = currentPeriod();
+  const { startDay, ready } = useSettings();
+  const period = currentPeriod(startDay);
   const [summary, setSummary] = useState<BudgetSummaryRow[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const { from, to } = periodRange(period);
+    if (!ready) return; // tunggu setelan periode terbaca supaya rentangnya tidak salah
+    const { from, to } = periodRange(period, startDay);
     const [{ data: sum }, { data: inc }] = await Promise.all([
       supabase
         .from("budget_summary")
@@ -29,7 +32,7 @@ export default function DashboardPage() {
     setTotalIncome(((inc as { amount: number }[]) ?? []).reduce((s, r) => s + Number(r.amount), 0));
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
+  }, [period, startDay, ready]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data saat mount/ganti bulan
@@ -43,13 +46,13 @@ export default function DashboardPage() {
   return (
     <div>
       <header className="px-5 pt-[calc(env(safe-area-inset-top)+24px)]">
-        <p className="text-sm text-gray-500 dark:text-gray-400">{formatPeriod(period)}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{formatPeriod(period, startDay)}</p>
         <h1 className="text-2xl font-bold">Halo! 👋</h1>
       </header>
 
       <div className="space-y-4 px-5 py-4">
         <div className="rounded-2xl bg-gradient-to-br from-lime-200 to-lime-300 p-5 text-lime-950 shadow-md shadow-lime-600/20 dark:from-lime-950 dark:to-green-950 dark:text-lime-100">
-          <p className="text-sm opacity-80">Sisa budget bulan ini</p>
+          <p className="text-sm opacity-80">Sisa budget periode ini</p>
           <p className={`mt-1 text-3xl font-bold ${totalRemaining < 0 ? "text-red-700 dark:text-red-300" : ""}`}>
             {formatRupiah(totalRemaining)}
           </p>
@@ -94,7 +97,7 @@ export default function DashboardPage() {
           ) : summary.length === 0 ? (
             <EmptyState
               icon="🎯"
-              message="Belum ada budget bulan ini. Yuk alokasikan dana setelah gajian!"
+              message="Belum ada budget periode ini. Yuk alokasikan dana setelah gajian!"
             >
               <Link
                 href="/budget"

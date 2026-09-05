@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import ThemeToggle from "@/components/ThemeToggle";
+import PeriodStartSetting from "@/components/PeriodStartSetting";
 
 const links = [
   { href: "/income", icon: "💸", label: "Pemasukan" },
@@ -50,6 +51,13 @@ export default function MenuPage() {
             </Link>
           ))}
         </div>
+
+        <section>
+          <h2 className="mb-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
+            Periode Budget
+          </h2>
+          <PeriodStartSetting />
+        </section>
 
         <section>
           <h2 className="mb-2 text-sm font-semibold text-gray-500 dark:text-gray-400">

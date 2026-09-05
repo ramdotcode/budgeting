@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Budget, BudgetItem, Category } from "@/lib/types";
-import { currentPeriod, formatRupiah, periodRange, shiftPeriod } from "@/lib/format";
+import { currentPeriod, daysInPeriod, formatRupiah, periodRange, shiftPeriod } from "@/lib/format";
+import { useSettings } from "@/lib/settings";
 import PageHeader from "@/components/PageHeader";
 import MonthPicker from "@/components/MonthPicker";
 import AmountInput from "@/components/AmountInput";
@@ -12,7 +13,8 @@ import EmptyState from "@/components/EmptyState";
 
 export default function BudgetPage() {
   const supabase = createClient();
-  const [period, setPeriod] = useState(currentPeriod());
+  const { startDay, ready } = useSettings();
+  const [period, setPeriod] = useState(() => currentPeriod());
   const [budget, setBudget] = useState<Budget | null>(null);
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -20,10 +22,12 @@ export default function BudgetPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editItem, setEditItem] = useState<{ categoryId: string; amount: number } | null>(null);
+  const [splitItem, setSplitItem] = useState<{ item: BudgetItem; days: number } | null>(null);
 
   const load = useCallback(async () => {
+    if (!ready) return; // tunggu setelan periode terbaca supaya rentangnya tidak salah
     setLoading(true);
-    const { from, to } = periodRange(period);
+    const { from, to } = periodRange(period, startDay);
     const [{ data: bud }, { data: cats }, { data: inc }] = await Promise.all([
       supabase.from("budgets").select("*").eq("period", period).maybeSingle(),
       supabase.from("categories").select("*").eq("type", "expense").order("name"),
@@ -44,12 +48,18 @@ export default function BudgetPage() {
     }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
+  }, [period, startDay, ready]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data saat mount/ganti bulan
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data saat mount/ganti periode
     load();
   }, [load]);
+
+  useEffect(() => {
+    // setelan periode baru selesai dibaca -> lompat ke periode yang sedang berjalan
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPeriod(currentPeriod(startDay));
+  }, [startDay]);
 
   async function ensureBudget(): Promise<Budget | null> {
     if (budget) return budget;
@@ -102,8 +112,26 @@ export default function BudgetPage() {
     setSaving(false);
   }
 
+  async function saveSplit(days: number | null) {
+    if (!splitItem) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("budget_items")
+      .update({ split_days: days })
+      .eq("id", splitItem.item.id);
+    if (error) {
+      alert(
+        "Gagal menyimpan pembagian hari. Pastikan migration 00002_split_days.sql sudah dijalankan di Supabase SQL Editor."
+      );
+    } else {
+      setSplitItem(null);
+      await load();
+    }
+    setSaving(false);
+  }
+
   async function removeItem(item: BudgetItem) {
-    if (!confirm(`Hapus budget "${item.categories?.name}"? Pengeluaran yang tercatat di kategori ini pada bulan ini ikut terhapus.`)) return;
+    if (!confirm(`Hapus budget "${item.categories?.name}"? Pengeluaran yang tercatat di kategori ini pada periode ini ikut terhapus.`)) return;
     await supabase.from("budget_items").delete().eq("id", item.id);
     await load();
   }
@@ -117,7 +145,7 @@ export default function BudgetPage() {
       .eq("period", prev)
       .maybeSingle();
     if (!prevBudget) {
-      alert("Tidak ada budget di bulan sebelumnya.");
+      alert("Tidak ada budget di periode sebelumnya.");
       setSaving(false);
       return;
     }
@@ -142,6 +170,8 @@ export default function BudgetPage() {
         budget_id: bud.id,
         category_id: i.category_id,
         allocated_amount: i.allocated_amount,
+        // sertakan hanya jika ada, supaya tetap jalan sebelum migration 00002 diterapkan
+        ...(i.split_days != null ? { split_days: i.split_days } : {}),
       }));
     if (toInsert.length > 0) {
       await supabase.from("budget_items").insert(toInsert);
@@ -150,6 +180,7 @@ export default function BudgetPage() {
     setSaving(false);
   }
 
+  const daysInMonth = daysInPeriod(period, startDay);
   const totalAllocated = items.reduce((s, i) => s + Number(i.allocated_amount), 0);
   const unallocated = totalIncome - totalAllocated;
   const usedCatIds = new Set(items.map((i) => i.category_id));
@@ -186,13 +217,13 @@ export default function BudgetPage() {
         ) : (
           <>
             {items.length === 0 && (
-              <EmptyState icon="🎯" message="Belum ada budget untuk bulan ini.">
+              <EmptyState icon="🎯" message="Belum ada budget untuk periode ini.">
                 <button
                   onClick={copyLastMonth}
                   disabled={saving}
                   className="rounded-xl border border-lime-600 dark:border-lime-500 px-4 py-2 text-sm font-semibold text-lime-700 dark:text-lime-400 disabled:opacity-50"
                 >
-                  Salin dari bulan lalu
+                  Salin dari periode lalu
                 </button>
               </EmptyState>
             )}
@@ -215,7 +246,21 @@ export default function BudgetPage() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {formatRupiah(Number(item.allocated_amount))}
                       </p>
+                      {item.split_days ? (
+                        <p className="text-xs font-medium text-sky-600 dark:text-sky-400">
+                          📅 ±{formatRupiah(Math.floor(Number(item.allocated_amount) / item.split_days))}
+                          /hari · {item.split_days} hari
+                        </p>
+                      ) : null}
                     </div>
+                    <button
+                      onClick={() =>
+                        setSplitItem({ item, days: item.split_days ?? daysInMonth })
+                      }
+                      className="px-2 py-1 text-sm text-sky-600 dark:text-sky-400"
+                    >
+                      /hari
+                    </button>
                     <button
                       onClick={() =>
                         setEditItem({
@@ -272,7 +317,7 @@ export default function BudgetPage() {
                 disabled={saving}
                 className="w-full rounded-xl border border-gray-300 bg-white py-3 text-sm font-medium text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 disabled:opacity-50"
               >
-                Salin alokasi bulan lalu (yang belum ada)
+                Salin alokasi periode lalu (yang belum ada)
               </button>
             )}
           </>
@@ -289,7 +334,7 @@ export default function BudgetPage() {
               {categories.find((c) => c.id === editItem.categoryId)?.icon}{" "}
               {categories.find((c) => c.id === editItem.categoryId)?.name}
             </h2>
-            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">Berapa alokasi budget bulan ini?</p>
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">Berapa alokasi budget periode ini?</p>
             <div className="space-y-4">
               <AmountInput value={editItem.amount} onChange={(n) => setEditItem({ ...editItem, amount: n })} autoFocus />
               <button
@@ -299,6 +344,78 @@ export default function BudgetPage() {
               >
                 {saving ? "Menyimpan..." : "Simpan Alokasi"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {splitItem && (
+        <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={() => setSplitItem(null)}>
+          <div
+            className="w-full rounded-t-3xl bg-white dark:bg-gray-900 p-6 pb-[calc(env(safe-area-inset-bottom)+24px)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mb-1 text-lg font-bold">
+              {splitItem.item.categories?.icon} Bagi per Hari — {splitItem.item.categories?.name}
+            </h2>
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+              Alokasi {formatRupiah(Number(splitItem.item.allocated_amount))} dibagi berapa hari?
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={366}
+                  value={splitItem.days || ""}
+                  onChange={(e) =>
+                    setSplitItem({ ...splitItem, days: parseInt(e.target.value, 10) || 0 })
+                  }
+                  autoFocus
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-lg font-semibold outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
+                />
+                <span className="shrink-0 text-sm text-gray-500 dark:text-gray-400">hari</span>
+              </div>
+              <div className="flex gap-2">
+                {[7, 14, daysInMonth].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setSplitItem({ ...splitItem, days: d })}
+                    className={`rounded-full border px-3 py-1.5 text-sm ${
+                      splitItem.days === d
+                        ? "border-lime-500 bg-lime-100 font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300"
+                        : "border-gray-300 text-gray-600 dark:border-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {d === daysInMonth ? `${d} (1 periode)` : d} hari
+                  </button>
+                ))}
+              </div>
+              {splitItem.days >= 1 && splitItem.days <= 366 && (
+                <div className="rounded-xl bg-sky-50 px-4 py-3 text-center dark:bg-sky-950">
+                  <p className="text-sm text-sky-700 dark:text-sky-300">Jatah per hari</p>
+                  <p className="text-2xl font-bold text-sky-800 dark:text-sky-200">
+                    ±{formatRupiah(Math.floor(Number(splitItem.item.allocated_amount) / splitItem.days))}
+                  </p>
+                </div>
+              )}
+              <button
+                onClick={() => saveSplit(splitItem.days)}
+                disabled={saving || splitItem.days < 1 || splitItem.days > 366}
+                className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
+              >
+                {saving ? "Menyimpan..." : "Simpan Pembagian"}
+              </button>
+              {splitItem.item.split_days != null && (
+                <button
+                  onClick={() => saveSplit(null)}
+                  disabled={saving}
+                  className="w-full rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-600 dark:border-gray-700 dark:text-gray-300 disabled:opacity-50"
+                >
+                  Hapus pembagian hari
+                </button>
+              )}
             </div>
           </div>
         </div>

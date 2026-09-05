@@ -13,8 +13,10 @@ import {
   formatRupiah,
   lastDayOfPeriod,
   periodRange,
+  periodStart,
   todayStr,
 } from "@/lib/format";
+import { useSettings } from "@/lib/settings";
 import PageHeader from "@/components/PageHeader";
 import MonthPicker from "@/components/MonthPicker";
 import AmountInput from "@/components/AmountInput";
@@ -35,7 +37,8 @@ interface ExpenseRow {
 function ExpenseContent() {
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const [period, setPeriod] = useState(currentPeriod());
+  const { startDay, ready } = useSettings();
+  const [period, setPeriod] = useState(() => currentPeriod());
   const [summary, setSummary] = useState<BudgetSummaryRow[]>([]);
   const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +56,7 @@ function ExpenseContent() {
     setEditId(null);
     setAmount(0);
     setBudgetItemId("");
-    setDate(clampDateToPeriod(todayStr(), period));
+    setDate(clampDateToPeriod(todayStr(), period, startDay));
     setNote("");
     setError(null);
     setShowForm(true);
@@ -63,15 +66,16 @@ function ExpenseContent() {
     setEditId(exp.id);
     setAmount(Number(exp.amount));
     setBudgetItemId(exp.budget_item_id);
-    setDate(clampDateToPeriod(exp.date, period));
+    setDate(clampDateToPeriod(exp.date, period, startDay));
     setNote(exp.note ?? "");
     setError(null);
     setShowForm(true);
   }
 
   const load = useCallback(async () => {
+    if (!ready) return; // tunggu setelan periode terbaca supaya rentangnya tidak salah
     setLoading(true);
-    const { from, to } = periodRange(period);
+    const { from, to } = periodRange(period, startDay);
     const [{ data: sum }, { data: exp }] = await Promise.all([
       supabase
         .from("budget_summary")
@@ -90,7 +94,7 @@ function ExpenseContent() {
     setExpenses((exp as unknown as ExpenseRow[]) ?? []);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
+  }, [period, startDay, ready]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data saat mount/ganti bulan
@@ -98,10 +102,16 @@ function ExpenseContent() {
   }, [load]);
 
   useEffect(() => {
-    // budget item terikat ke periode terpilih, jadi tanggalnya juga harus di bulan yang sama
+    // setelan periode baru selesai dibaca -> lompat ke periode yang sedang berjalan
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDate(clampDateToPeriod(todayStr(), period));
-  }, [period]);
+    setPeriod(currentPeriod(startDay));
+  }, [startDay]);
+
+  useEffect(() => {
+    // budget item terikat ke periode terpilih, jadi tanggalnya juga harus di periode yang sama
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDate(clampDateToPeriod(todayStr(), period, startDay));
+  }, [period, startDay]);
 
   async function save() {
     if (amount <= 0 || !budgetItemId) return;
@@ -291,9 +301,9 @@ function ExpenseContent() {
                   <input
                     type="date"
                     value={date}
-                    min={period}
-                    max={lastDayOfPeriod(period)}
-                    onChange={(e) => setDate(clampDateToPeriod(e.target.value, period))}
+                    min={periodStart(period, startDay)}
+                    max={lastDayOfPeriod(period, startDay)}
+                    onChange={(e) => setDate(clampDateToPeriod(e.target.value, period, startDay))}
                     className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
                   />
                 </div>

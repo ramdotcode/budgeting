@@ -5,11 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 import type { BudgetSummaryRow } from "@/lib/types";
 import {
   currentPeriod,
-  formatPeriod,
+  formatPeriodShort,
   formatRupiah,
+  periodOfDate,
   periodRange,
+  periodStart,
   shiftPeriod,
 } from "@/lib/format";
+import { useSettings } from "@/lib/settings";
 import PageHeader from "@/components/PageHeader";
 import MonthPicker from "@/components/MonthPicker";
 import EmptyState from "@/components/EmptyState";
@@ -39,7 +42,8 @@ function shortRupiah(n: number): string {
 
 export default function ReportsPage() {
   const supabase = createClient();
-  const [period, setPeriod] = useState(currentPeriod());
+  const { startDay, ready } = useSettings();
+  const [period, setPeriod] = useState(() => currentPeriod());
   const [summary, setSummary] = useState<BudgetSummaryRow[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [trend, setTrend] = useState<
@@ -48,9 +52,10 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    if (!ready) return; // tunggu setelan periode terbaca supaya rentangnya tidak salah
     setLoading(true);
-    const { from, to } = periodRange(period);
-    const trendStart = shiftPeriod(period, -(TREND_MONTHS - 1));
+    const { from, to } = periodRange(period, startDay);
+    const trendStart = periodStart(shiftPeriod(period, -(TREND_MONTHS - 1)), startDay);
 
     const [{ data: sum }, { data: inc }, { data: allInc }, { data: allExp }] =
       await Promise.all([
@@ -77,36 +82,38 @@ export default function ReportsPage() {
       ((inc as { amount: number }[]) ?? []).reduce((s, r) => s + Number(r.amount), 0)
     );
 
-    // Kelompokkan pemasukan/pengeluaran per bulan untuk chart tren
-    const months: string[] = [];
-    for (let i = TREND_MONTHS - 1; i >= 0; i--) months.push(shiftPeriod(period, -i));
-    const byMonth = new Map(
-      months.map((m) => [m.slice(0, 7), { pemasukan: 0, pengeluaran: 0 }])
-    );
+    // Kelompokkan pemasukan/pengeluaran per periode untuk chart tren
+    const periods: string[] = [];
+    for (let i = TREND_MONTHS - 1; i >= 0; i--) periods.push(shiftPeriod(period, -i));
+    const byPeriod = new Map(periods.map((p) => [p, { pemasukan: 0, pengeluaran: 0 }]));
     for (const r of (allInc as { amount: number; date: string }[]) ?? []) {
-      const key = r.date.slice(0, 7);
-      const row = byMonth.get(key);
+      const row = byPeriod.get(periodOfDate(r.date, startDay));
       if (row) row.pemasukan += Number(r.amount);
     }
     for (const r of (allExp as { amount: number; date: string }[]) ?? []) {
-      const key = r.date.slice(0, 7);
-      const row = byMonth.get(key);
+      const row = byPeriod.get(periodOfDate(r.date, startDay));
       if (row) row.pengeluaran += Number(r.amount);
     }
     setTrend(
-      months.map((m) => ({
-        month: formatPeriod(m).split(" ")[0].slice(0, 3),
-        ...byMonth.get(m.slice(0, 7))!,
+      periods.map((p) => ({
+        month: formatPeriodShort(p),
+        ...byPeriod.get(p)!,
       }))
     );
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
+  }, [period, startDay, ready]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data saat mount/ganti bulan
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data saat mount/ganti periode
     load();
   }, [load]);
+
+  useEffect(() => {
+    // setelan periode baru selesai dibaca -> lompat ke periode yang sedang berjalan
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPeriod(currentPeriod(startDay));
+  }, [startDay]);
 
   const totalSpent = summary.reduce((s, r) => s + Number(r.spent), 0);
   const totalAllocated = summary.reduce((s, r) => s + Number(r.allocated_amount), 0);

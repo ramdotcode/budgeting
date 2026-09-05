@@ -10,8 +10,10 @@ import {
   formatRupiah,
   lastDayOfPeriod,
   periodRange,
+  periodStart,
   todayStr,
 } from "@/lib/format";
+import { useSettings } from "@/lib/settings";
 import PageHeader from "@/components/PageHeader";
 import MonthPicker from "@/components/MonthPicker";
 import AmountInput from "@/components/AmountInput";
@@ -20,7 +22,8 @@ import Link from "next/link";
 
 export default function IncomePage() {
   const supabase = createClient();
-  const [period, setPeriod] = useState(currentPeriod());
+  const { startDay, ready } = useSettings();
+  const [period, setPeriod] = useState(() => currentPeriod());
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ export default function IncomePage() {
     setEditId(null);
     setAmount(0);
     setCategoryId("");
-    setDate(clampDateToPeriod(todayStr(), period));
+    setDate(clampDateToPeriod(todayStr(), period, startDay));
     setNote("");
     setError(null);
     setShowForm(true);
@@ -48,15 +51,16 @@ export default function IncomePage() {
     setEditId(inc.id);
     setAmount(Number(inc.amount));
     setCategoryId(inc.category_id ?? "");
-    setDate(clampDateToPeriod(inc.date, period));
+    setDate(clampDateToPeriod(inc.date, period, startDay));
     setNote(inc.note ?? "");
     setError(null);
     setShowForm(true);
   }
 
   const load = useCallback(async () => {
+    if (!ready) return; // tunggu setelan periode terbaca supaya rentangnya tidak salah
     setLoading(true);
-    const { from, to } = periodRange(period);
+    const { from, to } = periodRange(period, startDay);
     const [{ data: inc }, { data: cats }] = await Promise.all([
       supabase
         .from("incomes")
@@ -70,7 +74,7 @@ export default function IncomePage() {
     setCategories((cats as Category[]) ?? []);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
+  }, [period, startDay, ready]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data saat mount/ganti bulan
@@ -78,10 +82,16 @@ export default function IncomePage() {
   }, [load]);
 
   useEffect(() => {
-    // pemasukan tampil per bulan berdasarkan tanggal, jadi jaga tanggal di periode terpilih
+    // setelan periode baru selesai dibaca -> lompat ke periode yang sedang berjalan
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDate(clampDateToPeriod(todayStr(), period));
-  }, [period]);
+    setPeriod(currentPeriod(startDay));
+  }, [startDay]);
+
+  useEffect(() => {
+    // pemasukan tampil per periode berdasarkan tanggal, jadi jaga tanggal di periode terpilih
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDate(clampDateToPeriod(todayStr(), period, startDay));
+  }, [period, startDay]);
 
   async function save() {
     if (amount <= 0) return;
@@ -235,9 +245,9 @@ export default function IncomePage() {
                 <input
                   type="date"
                   value={date}
-                  min={period}
-                  max={lastDayOfPeriod(period)}
-                  onChange={(e) => setDate(clampDateToPeriod(e.target.value, period))}
+                  min={periodStart(period, startDay)}
+                  max={lastDayOfPeriod(period, startDay)}
+                  onChange={(e) => setDate(clampDateToPeriod(e.target.value, period, startDay))}
                   className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
                 />
               </div>
