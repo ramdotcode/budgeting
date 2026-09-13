@@ -7,6 +7,17 @@ export function formatRupiah(amount: number): string {
   }).format(amount);
 }
 
+// ringkas untuk ruang sempit: 1500000 -> "Rp 1,5jt", 250000 -> "Rp 250rb"
+export function formatRupiahShort(amount: number): string {
+  const sign = amount < 0 ? "-" : "";
+  const n = Math.abs(amount);
+  const dec = (v: number) => v.toLocaleString("id-ID", { maximumFractionDigits: 1 });
+  if (n >= 1_000_000_000) return `${sign}Rp ${dec(n / 1_000_000_000)}M`;
+  if (n >= 1_000_000) return `${sign}Rp ${dec(n / 1_000_000)}jt`;
+  if (n >= 1_000) return `${sign}Rp ${Math.floor(n / 1_000)}rb`;
+  return `${sign}Rp ${n}`;
+}
+
 // "1500000" / "1.500.000" -> 1500000
 export function parseAmount(input: string): number {
   const digits = input.replace(/[^\d]/g, "");

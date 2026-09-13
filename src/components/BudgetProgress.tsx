@@ -18,11 +18,11 @@ export default function BudgetProgress({
   const barColor = over ? "bg-red-500" : warn ? "bg-yellow-500" : "bg-green-500";
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-900">
+    <div className="rounded-3xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
-            className="flex h-8 w-8 items-center justify-center rounded-full text-base"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
             style={{ backgroundColor: `${row.category_color}20` }}
           >
             {row.category_icon}

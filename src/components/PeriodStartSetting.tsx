@@ -11,7 +11,12 @@ import { useSettings } from "@/lib/settings";
 
 const PRESETS = [1, 20, 25, 28];
 
-export default function PeriodStartSetting() {
+export default function PeriodStartSetting({
+  trigger,
+}: {
+  /** tombol pemicu kustom; default-nya baris "Mulai periode" seperti di Menu */
+  trigger?: (open: () => void) => React.ReactNode;
+} = {}) {
   const { startDay, saveStartDay } = useSettings();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(startDay);
@@ -36,21 +41,25 @@ export default function PeriodStartSetting() {
 
   return (
     <>
-      <button
-        onClick={openSheet}
-        className="flex w-full items-center gap-3 rounded-2xl bg-white px-4 py-3.5 text-left shadow-sm active:bg-gray-50 dark:bg-gray-900 dark:active:bg-gray-800"
-      >
-        <span className="text-xl">🗓️</span>
-        <div className="flex-1">
-          <p className="font-medium">Mulai periode</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {startDay === 1
-              ? "Tanggal 1 (ikut kalender)"
-              : `Tanggal ${startDay} · ${formatPeriod(currentPeriod(startDay), startDay)}`}
-          </p>
-        </div>
-        <span className="text-gray-300 dark:text-gray-600">›</span>
-      </button>
+      {trigger ? (
+        trigger(openSheet)
+      ) : (
+        <button
+          onClick={openSheet}
+          className="flex w-full items-center gap-3 rounded-2xl bg-white px-4 py-3.5 text-left shadow-sm active:bg-gray-50 dark:bg-gray-900 dark:active:bg-gray-800"
+        >
+          <span className="text-xl">🗓️</span>
+          <div className="flex-1">
+            <p className="font-medium">Mulai periode</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {startDay === 1
+                ? "Tanggal 1 (ikut kalender)"
+                : `Tanggal ${startDay} · ${formatPeriod(currentPeriod(startDay), startDay)}`}
+            </p>
+          </div>
+          <span className="text-gray-300 dark:text-gray-600">›</span>
+        </button>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={() => setOpen(false)}>
