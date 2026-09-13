@@ -62,6 +62,12 @@ const PATHS = {
   home: <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />,
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   plus: <path d="M12 5v14M5 12h14" />,
+  pencil: (
+    <>
+      <path d="M4 20h4L19 9l-4-4L4 16z" />
+      <path d="m13.5 6.5 4 4" />
+    </>
+  ),
   plusCircle: (
     <>
       <circle cx="12" cy="12" r="9" />

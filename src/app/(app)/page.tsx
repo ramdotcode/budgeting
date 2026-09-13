@@ -5,13 +5,18 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { BudgetSummaryRow } from "@/lib/types";
 import {
+  addDays,
   currentPeriod,
   daysLeftInPeriod,
+  daysUntil,
+  formatDayMonth,
   formatPeriod,
+  formatPeriodCompact,
   formatRupiah,
   formatRupiahShort,
   periodRange,
   shiftPeriod,
+  todayStr,
 } from "@/lib/format";
 import { useSettings } from "@/lib/settings";
 import BudgetProgress from "@/components/BudgetProgress";
@@ -50,8 +55,16 @@ export default function DashboardPage() {
   const { startDay, ready } = useSettings();
   const [period, setPeriod] = useState(() => currentPeriod());
   const [summary, setSummary] = useState<BudgetSummaryRow[]>([]);
-  // budget item yang di-set "/hari" di halaman Budget — hanya ini yang dapat jatah per hari
-  const [dailyItemIds, setDailyItemIds] = useState<Set<string>>(new Set());
+  // budget item yang di-set "/hari" di halaman Budget -> tanggal akhir pembagian custom
+  // (null = bagi dengan sisa hari periode). Hanya item di sini yang dapat jatah per hari.
+  const [dailyItems, setDailyItems] = useState<Map<string, string | null>>(new Map());
+  const [splitEdit, setSplitEdit] = useState<{
+    row: BudgetSummaryRow;
+    days: number;
+    custom: boolean;
+  } | null>(null);
+  const [splitSaving, setSplitSaving] = useState(false);
+  const [splitError, setSplitError] = useState<string | null>(null);
   const [totals, setTotals] = useState<Totals>(NO_TOTALS);
   const [prevTotals, setPrevTotals] = useState<Totals>(NO_TOTALS);
   const [loading, setLoading] = useState(true);
@@ -90,16 +103,29 @@ export default function DashboardPage() {
         .lt("date", old.to),
     ]);
     const rows = (sum.data as BudgetSummaryRow[]) ?? [];
-    // split_days tidak ada di view budget_summary, jadi ambil dari budget_items
-    const { data: daily } = rows.length
-      ? await supabase
+    // split_days & daily_until tidak ada di view budget_summary, jadi ambil dari budget_items
+    let daily: { id: string; daily_until?: string | null }[] = [];
+    if (rows.length) {
+      const ids = rows.map((r) => r.budget_item_id);
+      const full = await supabase
+        .from("budget_items")
+        .select("id, daily_until")
+        .in("id", ids)
+        .not("split_days", "is", null);
+      if (!full.error) {
+        daily = full.data ?? [];
+      } else {
+        // kolom daily_until belum ada (migration 00004 belum dijalankan) -> tetap tampil pakai sisa hari
+        const basic = await supabase
           .from("budget_items")
           .select("id")
-          .in("id", rows.map((r) => r.budget_item_id))
-          .not("split_days", "is", null)
-      : { data: [] };
+          .in("id", ids)
+          .not("split_days", "is", null);
+        daily = basic.data ?? [];
+      }
+    }
     setSummary(rows);
-    setDailyItemIds(new Set(((daily as { id: string }[]) ?? []).map((d) => d.id)));
+    setDailyItems(new Map(daily.map((d) => [d.id, d.daily_until ?? null])));
     setTotals(toTotals(rows, inc.data as MoneyRow[] | null, exp.count));
     setPrevTotals(toTotals(prevSum.data as AllocRow[] | null, prevInc.data as MoneyRow[] | null, prevExp.count));
     setLoading(false);
@@ -119,6 +145,45 @@ export default function DashboardPage() {
 
   const remaining = totals.allocated - totals.spent;
   const prevRemaining = prevTotals.allocated - prevTotals.spent;
+  const today = todayStr();
+  const splitValid = !!splitEdit && splitEdit.days >= 1 && splitEdit.days <= 366;
+
+  // pembagi jatah per hari: jumlah hari custom (kalau masih berlaku) atau sisa hari periode
+  function dailyFor(row: BudgetSummaryRow) {
+    if (!isCurrent || !dailyItems.has(row.budget_item_id)) return undefined;
+    const until = dailyItems.get(row.budget_item_id);
+    const customDays = until ? daysUntil(until, today) : 0;
+    const days = customDays > 0 ? customDays : daysLeft;
+    return {
+      days,
+      label:
+        until && customDays > 0
+          ? `sisa ${customDays} hari (s/d ${formatDayMonth(until)})`
+          : `sisa ${daysLeft} hari`,
+      onEdit: () => {
+        setSplitError(null);
+        setSplitEdit({ row, days, custom: customDays > 0 });
+      },
+    };
+  }
+
+  async function saveDaily(days: number | null) {
+    if (!splitEdit) return;
+    setSplitSaving(true);
+    setSplitError(null);
+    const id = splitEdit.row.budget_item_id;
+    const until = days ? addDays(today, days - 1) : null;
+    const { error } = await supabase.from("budget_items").update({ daily_until: until }).eq("id", id);
+    setSplitSaving(false);
+    if (error) {
+      setSplitError(
+        "Gagal menyimpan. Pastikan migration 00004_daily_until.sql sudah dijalankan di Supabase SQL Editor."
+      );
+      return;
+    }
+    setDailyItems((prev) => new Map(prev).set(id, until));
+    setSplitEdit(null);
+  }
 
   return (
     <div>
@@ -177,12 +242,15 @@ export default function DashboardPage() {
                     </button>
                   )}
                 />
-                <label className="relative">
-                  <span className="sr-only">Pilih periode</span>
+                {/* pill menampilkan label pendek; <select> transparan di atasnya membuka daftar lengkap */}
+                <label className="relative flex items-center gap-1.5 whitespace-nowrap rounded-full bg-lime-950/10 py-1.5 pl-3 pr-2 text-xs font-medium dark:bg-black/25">
+                  {formatPeriodCompact(period, startDay)}
+                  <Icon name="chevronDown" className="h-3.5 w-3.5" />
                   <select
+                    aria-label="Pilih periode"
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="appearance-none rounded-full bg-lime-950/10 py-1.5 pl-3 pr-7 text-xs font-medium outline-none dark:bg-black/25"
+                    className="absolute inset-0 cursor-pointer opacity-0"
                   >
                     {periodChoices.map((p) => (
                       <option key={p} value={p}>
@@ -190,10 +258,6 @@ export default function DashboardPage() {
                       </option>
                     ))}
                   </select>
-                  <Icon
-                    name="chevronDown"
-                    className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2"
-                  />
                 </label>
               </div>
             </div>
@@ -267,11 +331,7 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {summary.map((row) => (
-                <BudgetProgress
-                  key={row.budget_item_id}
-                  row={row}
-                  daysLeft={isCurrent && dailyItemIds.has(row.budget_item_id) ? daysLeft : undefined}
-                />
+                <BudgetProgress key={row.budget_item_id} row={row} daily={dailyFor(row)} />
               ))}
             </div>
           )}
@@ -332,6 +392,79 @@ export default function DashboardPage() {
           </p>
         </section>
       </div>
+
+      {splitEdit && (
+        <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={() => setSplitEdit(null)}>
+          <div
+            className="w-full rounded-t-3xl bg-white p-6 pb-[calc(env(safe-area-inset-bottom)+24px)] dark:bg-gray-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mb-1 text-lg font-bold">
+              {splitEdit.row.category_icon} Bagi per Hari — {splitEdit.row.category_name}
+            </h2>
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+              Sisa {formatRupiah(Number(splitEdit.row.remaining))} mau dibagi berapa hari, mulai hari ini?
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={366}
+                  value={splitEdit.days || ""}
+                  onChange={(e) => setSplitEdit({ ...splitEdit, days: parseInt(e.target.value, 10) || 0 })}
+                  autoFocus
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-lg font-semibold outline-none focus:border-lime-500 dark:border-gray-700 dark:bg-gray-900"
+                />
+                <span className="shrink-0 text-sm text-gray-500 dark:text-gray-400">hari</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[3, 5, 7, 14].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setSplitEdit({ ...splitEdit, days: d })}
+                    className={`rounded-full border px-3 py-1.5 text-sm ${
+                      splitEdit.days === d
+                        ? "border-lime-500 bg-lime-100 font-semibold text-lime-800 dark:bg-lime-950 dark:text-lime-300"
+                        : "border-gray-300 text-gray-600 dark:border-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {d} hari
+                  </button>
+                ))}
+              </div>
+              {splitValid && (
+                <div className="rounded-xl bg-sky-50 px-4 py-3 text-center dark:bg-sky-950">
+                  <p className="text-sm text-sky-700 dark:text-sky-300">
+                    Jatah per hari s/d {formatDayMonth(addDays(today, splitEdit.days - 1))}
+                  </p>
+                  <p className="text-2xl font-bold text-sky-800 dark:text-sky-200">
+                    ±{formatRupiah(Math.floor(Number(splitEdit.row.remaining) / splitEdit.days))}
+                  </p>
+                </div>
+              )}
+              {splitError && <p className="text-sm text-red-600 dark:text-red-400">{splitError}</p>}
+              <button
+                onClick={() => saveDaily(splitEdit.days)}
+                disabled={splitSaving || !splitValid}
+                className="w-full rounded-xl bg-lime-400 py-3 font-semibold text-lime-950 disabled:opacity-50"
+              >
+                {splitSaving ? "Menyimpan..." : "Simpan"}
+              </button>
+              {splitEdit.custom && (
+                <button
+                  onClick={() => saveDaily(null)}
+                  disabled={splitSaving}
+                  className="w-full rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-600 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
+                >
+                  Pakai sisa hari periode ({daysLeft} hari)
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

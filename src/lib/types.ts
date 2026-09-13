@@ -35,6 +35,8 @@ export interface BudgetItem {
   category_id: string;
   allocated_amount: number;
   split_days: number | null;
+  /** tanggal akhir pembagian sisa budget per hari yang diisi dari Home; null = sisa hari periode */
+  daily_until?: string | null;
   categories?: Pick<Category, "name" | "icon" | "color"> | null;
 }
 

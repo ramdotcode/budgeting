@@ -128,6 +128,24 @@ export function daysLeftInPeriod(
   return Math.max(Math.round((last.getTime() - from.getTime()) / 86_400_000) + 1, 0);
 }
 
+// "2026-09-13" + 4 -> "2026-09-17"
+export function addDays(dateStr: string, n: number): string {
+  const d = parseYmd(dateStr);
+  d.setDate(d.getDate() + n);
+  return ymd(d);
+}
+
+// jumlah hari dari hari ini s/d tanggal tsb (keduanya ikut dihitung); 0 kalau sudah lewat
+export function daysUntil(dateStr: string, today = todayStr()): number {
+  const diff = Math.round((parseYmd(dateStr).getTime() - parseYmd(today).getTime()) / 86_400_000) + 1;
+  return Math.max(diff, 0);
+}
+
+// "2026-09-17" -> "17 Sep"
+export function formatDayMonth(dateStr: string): string {
+  return parseYmd(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+}
+
 // "2026-07-01" -> "Juli 2026"
 export function formatPeriodMonth(period: string): string {
   const [y, m] = period.split("-").map(Number);
@@ -154,6 +172,12 @@ export function formatPeriod(period: string, startDay = DEFAULT_PERIOD_START_DAY
   const fromLabel = from.toLocaleDateString("id-ID", sameYear ? opts : { ...opts, year: "numeric" });
   const toLabel = to.toLocaleDateString("id-ID", { ...opts, year: "numeric" });
   return `${fromLabel} – ${toLabel}`;
+}
+
+// label pendek untuk ruang sempit (pill): startDay 1 -> "September 2026", startDay 25 -> "25 Agu – 24 Sep"
+export function formatPeriodCompact(period: string, startDay = DEFAULT_PERIOD_START_DAY): string {
+  if (startDay <= 1) return formatPeriodMonth(period);
+  return `${formatDayMonth(periodStart(period, startDay))} – ${formatDayMonth(lastDayOfPeriod(period, startDay))}`;
 }
 
 // jaga tanggal tetap di dalam periode, supaya catatan tidak nyasar lintas periode
