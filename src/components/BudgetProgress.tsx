@@ -1,9 +1,17 @@
 import { formatRupiah } from "@/lib/format";
 import type { BudgetSummaryRow } from "@/lib/types";
 
-export default function BudgetProgress({ row }: { row: BudgetSummaryRow }) {
+export default function BudgetProgress({
+  row,
+  daysLeft,
+}: {
+  row: BudgetSummaryRow;
+  /** sisa hari periode berjalan; kalau diisi, sisa budget ditampilkan sebagai jatah per hari */
+  daysLeft?: number;
+}) {
   const alloc = Number(row.allocated_amount);
   const spent = Number(row.spent);
+  const remaining = Number(row.remaining);
   const pct = alloc > 0 ? Math.min((spent / alloc) * 100, 100) : spent > 0 ? 100 : 0;
   const over = spent > alloc;
   const warn = !over && alloc > 0 && spent / alloc > 0.75;
@@ -24,7 +32,7 @@ export default function BudgetProgress({ row }: { row: BudgetSummaryRow }) {
         <span
           className={`text-sm font-semibold ${over ? "text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-200"}`}
         >
-          {formatRupiah(Number(row.remaining))}
+          {formatRupiah(remaining)}
         </span>
       </div>
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
@@ -34,6 +42,11 @@ export default function BudgetProgress({ row }: { row: BudgetSummaryRow }) {
         <span>Terpakai {formatRupiah(spent)}</span>
         <span>dari {formatRupiah(alloc)}</span>
       </div>
+      {daysLeft != null && daysLeft > 0 && remaining > 0 && (
+        <p className="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">
+          📅 ±{formatRupiah(Math.floor(remaining / daysLeft))}/hari · sisa {daysLeft} hari
+        </p>
+      )}
       {over && (
         <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
           ⚠️ Melebihi budget {formatRupiah(spent - alloc)}

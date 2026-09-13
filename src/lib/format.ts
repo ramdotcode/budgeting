@@ -104,6 +104,19 @@ export function daysInPeriod(period: string, startDay = DEFAULT_PERIOD_START_DAY
   return Math.round((to.getTime() - from.getTime()) / 86_400_000);
 }
 
+// sisa hari periode, dihitung dari hari ini (ikut dihitung) s/d tanggal terakhir periode
+// startDay 25, hari ini 13 Sep, periode 25 Agu – 24 Sep -> 12 hari (13..24)
+export function daysLeftInPeriod(
+  period: string,
+  startDay = DEFAULT_PERIOD_START_DAY,
+  today = todayStr()
+): number {
+  const first = periodStart(period, startDay);
+  const from = parseYmd(today < first ? first : today);
+  const last = parseYmd(lastDayOfPeriod(period, startDay));
+  return Math.max(Math.round((last.getTime() - from.getTime()) / 86_400_000) + 1, 0);
+}
+
 // "2026-07-01" -> "Juli 2026"
 export function formatPeriodMonth(period: string): string {
   const [y, m] = period.split("-").map(Number);

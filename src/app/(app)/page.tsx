@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { BudgetSummaryRow } from "@/lib/types";
-import { currentPeriod, formatPeriod, formatRupiah, periodRange } from "@/lib/format";
+import { currentPeriod, daysLeftInPeriod, formatPeriod, formatRupiah, periodRange } from "@/lib/format";
 import { useSettings } from "@/lib/settings";
 import BudgetProgress from "@/components/BudgetProgress";
 import EmptyState from "@/components/EmptyState";
@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const supabase = createClient();
   const { startDay, ready } = useSettings();
   const period = currentPeriod(startDay);
+  const daysLeft = daysLeftInPeriod(period, startDay);
   const [summary, setSummary] = useState<BudgetSummaryRow[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -46,7 +47,9 @@ export default function DashboardPage() {
   return (
     <div>
       <header className="px-5 pt-[calc(env(safe-area-inset-top)+24px)]">
-        <p className="text-sm text-gray-500 dark:text-gray-400">{formatPeriod(period, startDay)}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {formatPeriod(period, startDay)} · sisa {daysLeft} hari
+        </p>
         <h1 className="text-2xl font-bold">Halo! 👋</h1>
       </header>
 
@@ -109,7 +112,7 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {summary.map((row) => (
-                <BudgetProgress key={row.budget_item_id} row={row} />
+                <BudgetProgress key={row.budget_item_id} row={row} daysLeft={daysLeft} />
               ))}
             </div>
           )}
