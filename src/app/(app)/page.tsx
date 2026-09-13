@@ -15,6 +15,8 @@ export default function DashboardPage() {
   const period = currentPeriod(startDay);
   const daysLeft = daysLeftInPeriod(period, startDay);
   const [summary, setSummary] = useState<BudgetSummaryRow[]>([]);
+  // budget item yang di-set "/hari" di halaman Budget — hanya ini yang dapat jatah per hari
+  const [dailyItemIds, setDailyItemIds] = useState<Set<string>>(new Set());
   const [totalIncome, setTotalIncome] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +31,17 @@ export default function DashboardPage() {
         .order("category_name"),
       supabase.from("incomes").select("amount").gte("date", from).lt("date", to),
     ]);
-    setSummary((sum as BudgetSummaryRow[]) ?? []);
+    const rows = (sum as BudgetSummaryRow[]) ?? [];
+    // split_days tidak ada di view budget_summary, jadi ambil dari budget_items
+    const { data: daily } = rows.length
+      ? await supabase
+          .from("budget_items")
+          .select("id")
+          .in("id", rows.map((r) => r.budget_item_id))
+          .not("split_days", "is", null)
+      : { data: [] };
+    setSummary(rows);
+    setDailyItemIds(new Set(((daily as { id: string }[]) ?? []).map((d) => d.id)));
     setTotalIncome(((inc as { amount: number }[]) ?? []).reduce((s, r) => s + Number(r.amount), 0));
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,7 +124,11 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {summary.map((row) => (
-                <BudgetProgress key={row.budget_item_id} row={row} daysLeft={daysLeft} />
+                <BudgetProgress
+                  key={row.budget_item_id}
+                  row={row}
+                  daysLeft={dailyItemIds.has(row.budget_item_id) ? daysLeft : undefined}
+                />
               ))}
             </div>
           )}

@@ -6,7 +6,7 @@ export default function BudgetProgress({
   daysLeft,
 }: {
   row: BudgetSummaryRow;
-  /** sisa hari periode berjalan; kalau diisi, sisa budget ditampilkan sebagai jatah per hari */
+  /** sisa hari periode berjalan; isi hanya untuk kategori "/hari" supaya sisa budget tampil sebagai jatah per hari */
   daysLeft?: number;
 }) {
   const alloc = Number(row.allocated_amount);
